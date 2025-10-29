@@ -1,0 +1,13 @@
+###
+GET http://localhost:8083/api/products?id=1
+Accept: application/json
+
+###
+POST  http://localhost:8083/api/products
+Content-Type: application/json
+
+{
+  "title" : "iphone 17 pro max",
+  "description" : "product is company Apple",
+  "price" : 3000
+}

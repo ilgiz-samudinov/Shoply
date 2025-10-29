@@ -1,0 +1,16 @@
+POST http://localhost:8084/api/order-items
+Content-Type: application/json
+
+{
+  "orderId" : 1,
+  "productId" : 1,
+  "quantity" : 3
+
+}
+
+
+###
+GET http://localhost:8084/api/order-items
+Accept: application/json
+
+

@@ -1,0 +1,37 @@
+POST http://localhost:8085/api/warehouses
+Content-Type: application/json
+
+{
+  "name" : "forgotten shore",
+  "address" : "Karasaev:1000"
+}
+
+###
+
+GET http://localhost:8085/api/warehouses
+Accept: application/json
+
+
+###
+GET http://localhost:8085/api/warehouses/3
+Accept: application/json
+
+###
+PUT http://localhost:8085/api/warehouses/3
+Content-Type: application/json
+
+{
+  "name" : "Archa",
+  "address" : "Manas: 189"
+}
+
+###
+
+
+DELETE http://localhost:8085/api/warehouses/3
+Accept: application/json
+
+
+
+###
+

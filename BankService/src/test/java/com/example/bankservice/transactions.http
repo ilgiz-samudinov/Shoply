@@ -1,0 +1,21 @@
+### Create Transaction
+POST http://localhost:8086/api/transactions
+Content-Type: application/json
+
+{
+  "accountId": 1,
+  "authorizationId": 1,
+  "amount": 1500
+}
+
+### Get All Transactions
+GET http://localhost:8086/api/transactions
+accept: application/json
+
+### Get Transaction by ID
+GET http://localhost:8086/api/transactions/1
+accept: application/json
+
+### Delete Transaction by ID
+DELETE http://localhost:8086/api/transactions/2
+accept: application/json

@@ -1,0 +1,21 @@
+POST http://localhost:8084/api/orders
+Content-Type: application/json
+
+{
+"userId" : 1,
+  "orderStatus" : "NEW"
+}
+
+###
+GET http://localhost:8084/api/orders
+Accept: application/json
+
+
+### Финализировать заказ с id=1
+POST http://localhost:8084/api/orders/1/finalize
+Content-Type: application/json
+
+
+
+
+

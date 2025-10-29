@@ -1,0 +1,46 @@
+### Создать новый инвентарь
+POST http://localhost:8085/api/inventories
+Content-Type: application/json
+Accept: application/json
+
+{
+  "productId": 1,
+  "warehouseId": 1,
+  "totalQuantity": 1000
+}
+
+
+
+
+### Получить все инвентари
+GET http://localhost:8085/api/inventories
+Accept: application/json
+
+###
+
+### Получить инвентарь по ID
+GET http://localhost:8085/api/inventories/1
+Accept: application/json
+
+###
+
+
+###
+
+### Обновить существующий инвентарь
+PUT http://localhost:8085/api/inventories/1
+Content-Type: application/json
+Accept: application/json
+
+{
+  "productId": 1,
+  "warehouseId": 1,
+  "totalQuantity": 1500,
+  "reservedQuantity": 100
+}
+
+###
+
+### Удалить инвентарь
+DELETE http://localhost:8085/api/inventories/1
+Accept: application/json
