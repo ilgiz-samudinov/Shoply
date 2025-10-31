@@ -30,63 +30,32 @@ public class S3FileStorage implements FileStorage {
         try {
             ensureBucketExists(bucketName);
             try (InputStream inputStream = file.getInputStream()) {
-                s3Client.putObject(
-                        PutObjectRequest.builder()
-                                .bucket(bucketName)
-                                .key(key)
-                                .contentType(file.getContentType())
-                                .build(),
-                        RequestBody.fromInputStream(file.getInputStream(), file.getSize())
-                );
+                s3Client.putObject(PutObjectRequest.builder().bucket(bucketName).key(key).contentType(file.getContentType()).build(), RequestBody.fromInputStream(inputStream, file.getSize()));
             }
+
             return key;
         } catch (IOException | S3Exception exception) {
-            throw new RuntimeException("Error uploading file: " + exception.getMessage(), exception);
+            throw new FileStorageException("Error uploading file: " + exception.getMessage(), exception);
         }
     }
-
-
-
-    private void ensureBucketExists (String bucketName) {
-        boolean exists = s3Client.listBuckets().buckets().stream()
-                .anyMatch(bucket -> bucket.name().equals(bucketName));
-
-        if(!exists) {
-            try {
-                s3Client.createBucket(CreateBucketRequest.builder()
-                        .bucket(bucketName)
-                        .build());
-            } catch (S3Exception s3Exception) {
-                if (!s3Exception.awsErrorDetails().errorCode().equals("BucketAlreadyOwnedByYou")) {
-                    throw s3Exception;
-                }
-            }
-        }
-    }
-
 
 
     public InputStream download(String bucketName, String key) {
         try {
-            GetObjectRequest getObjectRequest = GetObjectRequest.builder()
-                    .bucket(bucketName)
-                    .key(key)
-                    .build();
+            GetObjectRequest getObjectRequest = GetObjectRequest.builder().bucket(bucketName).key(key).build();
             return s3Client.getObject(getObjectRequest);
         } catch (S3Exception e) {
             throw new FileStorageException("Error downloading file", e);
         }
-
     }
+
+
 
 
 
     public String getContentType(String bucketName, String key) {
         try {
-            HeadObjectRequest headRequest = HeadObjectRequest.builder()
-                    .bucket(bucketName)
-                    .key(key)
-                    .build();
+            HeadObjectRequest headRequest = HeadObjectRequest.builder().bucket(bucketName).key(key).build();
             return s3Client.headObject(headRequest).contentType();
         } catch (NoSuchKeyException e) {
             throw new FileStorageException("File not found: " + key, e);
@@ -96,16 +65,24 @@ public class S3FileStorage implements FileStorage {
     }
 
 
-
     public void delete(String bucketName, String key) {
         try {
-            DeleteObjectRequest deleteRequest = DeleteObjectRequest.builder()
-                    .bucket(bucketName)
-                    .key(key)
-                    .build();
+            DeleteObjectRequest deleteRequest = DeleteObjectRequest.builder().bucket(bucketName).key(key).build();
             s3Client.deleteObject(deleteRequest);
         } catch (S3Exception e) {
             throw new FileStorageException("Error deleting file: " + e.getMessage(), e);
+        }
+    }
+
+
+    private void ensureBucketExists(String bucketName) {
+        try {
+            HeadBucketRequest headRequest = HeadBucketRequest.builder().bucket(bucketName).build();
+            s3Client.headBucket(headRequest);
+        } catch (NoSuchBucketException e) {
+            s3Client.createBucket(CreateBucketRequest.builder().bucket(bucketName).build());
+        } catch (S3Exception e) {
+            throw new FileStorageException("Error checking bucket: " + e.getMessage(), e);
         }
     }
 
