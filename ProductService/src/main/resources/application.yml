@@ -1,0 +1,12 @@
+#spring:
+#  application:
+#    name: ProductService
+#  data:
+#    mongodb:
+#      uri: mongodb://admin:password@localhost:27017/test
+#
+#
+#server:
+#  port: 8083
+#
+#

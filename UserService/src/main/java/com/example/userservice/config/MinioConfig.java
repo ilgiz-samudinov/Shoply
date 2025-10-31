@@ -26,7 +26,7 @@ public class MinioConfig {
     private String region;
 
     @Bean
-    public S3Client minioS3Client() {
+    public S3Client S3Client() {
         return S3Client.builder()
                 .credentialsProvider(
                         StaticCredentialsProvider.create(

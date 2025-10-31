@@ -1,5 +1,6 @@
 package com.example.userservice.adapter;
 
+import com.example.userservice.exception.FileStorageException;
 import com.example.userservice.port.FileStorage;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -20,61 +21,93 @@ public class S3FileStorage implements FileStorage {
 
 
     public String upload(Long userProfileId, MultipartFile file, String bucketName) {
+        if (file.isEmpty()) {
+            throw new IllegalArgumentException("file is empty");
+        }
+
         String key = buildFileName(userProfileId, file);
 
         try {
-            if (s3Client.listBuckets().buckets().stream().noneMatch(b -> b.name().equals(bucketName))) {
-                s3Client.createBucket(
-                        CreateBucketRequest.builder().build());
+            ensureBucketExists(bucketName);
+            try (InputStream inputStream = file.getInputStream()) {
+                s3Client.putObject(
+                        PutObjectRequest.builder()
+                                .bucket(bucketName)
+                                .key(key)
+                                .contentType(file.getContentType())
+                                .build(),
+                        RequestBody.fromInputStream(file.getInputStream(), file.getSize())
+                );
             }
-            s3Client.putObject(
-                    PutObjectRequest.builder()
-                            .bucket(bucketName)
-                            .key(key)
-                            .contentType(file.getContentType())
-                            .build(),
-                    RequestBody.fromInputStream(file.getInputStream(), file.getSize())
-            );
-
             return key;
-        } catch (IOException e) {
-            throw new RuntimeException("Ошибка при загрузке файла: " + e.getMessage(), e);
+        } catch (IOException | S3Exception exception) {
+            throw new RuntimeException("Error uploading file: " + exception.getMessage(), exception);
         }
     }
 
 
 
+    private void ensureBucketExists (String bucketName) {
+        boolean exists = s3Client.listBuckets().buckets().stream()
+                .anyMatch(bucket -> bucket.name().equals(bucketName));
+
+        if(!exists) {
+            try {
+                s3Client.createBucket(CreateBucketRequest.builder()
+                        .bucket(bucketName)
+                        .build());
+            } catch (S3Exception s3Exception) {
+                if (!s3Exception.awsErrorDetails().errorCode().equals("BucketAlreadyOwnedByYou")) {
+                    throw s3Exception;
+                }
+            }
+        }
+    }
+
+
 
     public InputStream download(String bucketName, String key) {
-        GetObjectRequest getObjectRequest = GetObjectRequest.builder()
-                .bucket(bucketName)
-                .key(key)
-                .build();
-        return s3Client.getObject(getObjectRequest);
+        try {
+            GetObjectRequest getObjectRequest = GetObjectRequest.builder()
+                    .bucket(bucketName)
+                    .key(key)
+                    .build();
+            return s3Client.getObject(getObjectRequest);
+        } catch (S3Exception e) {
+            throw new FileStorageException("Error downloading file", e);
+        }
+
     }
 
 
 
     public String getContentType(String bucketName, String key) {
-        HeadObjectRequest headRequest = HeadObjectRequest.builder()
-                .bucket(bucketName)
-                .key(key)
-                .build();
-
-        return s3Client.headObject(headRequest).contentType();
+        try {
+            HeadObjectRequest headRequest = HeadObjectRequest.builder()
+                    .bucket(bucketName)
+                    .key(key)
+                    .build();
+            return s3Client.headObject(headRequest).contentType();
+        } catch (NoSuchKeyException e) {
+            throw new FileStorageException("File not found: " + key, e);
+        } catch (S3Exception e) {
+            throw new FileStorageException("Error retrieving metadata: " + e.getMessage(), e);
+        }
     }
 
 
 
     public void delete(String bucketName, String key) {
-        DeleteObjectRequest deleteObjectRequest = DeleteObjectRequest.builder()
-                .bucket(bucketName)
-                .key(key)
-                .build();
-        s3Client.deleteObject(deleteObjectRequest);
+        try {
+            DeleteObjectRequest deleteRequest = DeleteObjectRequest.builder()
+                    .bucket(bucketName)
+                    .key(key)
+                    .build();
+            s3Client.deleteObject(deleteRequest);
+        } catch (S3Exception e) {
+            throw new FileStorageException("Error deleting file: " + e.getMessage(), e);
+        }
     }
-
-
 
 
     private String getFileExtension(String fileName) {
@@ -85,10 +118,8 @@ public class S3FileStorage implements FileStorage {
     }
 
     private String buildFileName(Long userProfileId, MultipartFile file) {
-        String originalFileName = file.getOriginalFilename();
-        String extension = getFileExtension(originalFileName);
+        String extension = getFileExtension(file.getOriginalFilename());
         String uuid = UUID.randomUUID().toString();
-        String storedFileName = uuid + extension;
-        return userProfileId + "/" + storedFileName;
+        return userProfileId + "/" + uuid + extension;
     }
 }
