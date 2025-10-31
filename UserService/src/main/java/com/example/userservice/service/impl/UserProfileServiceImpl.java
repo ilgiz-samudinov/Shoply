@@ -7,6 +7,8 @@ import com.example.userservice.mapper.UserProfileMapper;
 import com.example.userservice.model.User;
 import com.example.userservice.model.UserProfile;
 import com.example.userservice.repository.UserProfileRepository;
+import com.example.userservice.service.UserProfileService;
+import com.example.userservice.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,7 +17,7 @@ import java.util.List;
 
 @RequiredArgsConstructor
 @Service
-public class UserProfileService {
+public class UserProfileServiceImpl implements UserProfileService {
 
     private final UserProfileRepository userProfileRepository;
     private final UserProfileMapper userProfileMapper;

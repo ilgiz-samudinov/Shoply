@@ -48,7 +48,7 @@ public class UserAvatarServiceImpl implements UserAvatarService {
         try {
             avatarUrl = fileStorage.upload(userProfileId, file, bucketName);
         } catch (Exception ex) {
-            throw new FileStorageException("Не удалось загрузить файл аватара", ex);
+            throw new FileStorageException("Failed to upload avatar file", ex);
         }
 
         try {
@@ -62,7 +62,6 @@ public class UserAvatarServiceImpl implements UserAvatarService {
                         .uploadedAt(Instant.now(clock))
                         .build();
                 UserAvatar saved = userAvatarRepository.save(userAvatar);
-                // При необходимости: userProfile.setUserAvatar(saved);
                 return saved;
             } else {
 
@@ -79,15 +78,12 @@ public class UserAvatarServiceImpl implements UserAvatarService {
             try {
                 fileStorage.delete(bucketName, avatarUrl);
             } catch (Exception deleteEx) {
-                System.err.println("Не удалось удалить загруженный файл после ошибки БД: " + avatarUrl);
+                System.err.println("Failed to delete uploaded file after DB error: " + avatarUrl);
                 deleteEx.printStackTrace();
             }
-            throw new UserAvatarPersistenceException("Ошибка при сохранении аватара в БД", ex);
+            throw new UserAvatarPersistenceException("Error while saving avatar to the database", ex);
         }
     }
-
-
-
 
 
     public UserAvatarDownload downloadUserAvatar(Long id) {
@@ -110,9 +106,4 @@ public class UserAvatarServiceImpl implements UserAvatarService {
     public UserAvatar getUserAvatarById(Long id) {
         return userAvatarRepository.findById(id).orElseThrow(()-> new NotFoundException("User avatar not found"));
     }
-
-
-
-
-
 }
