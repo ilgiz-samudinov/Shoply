@@ -12,6 +12,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
+
+import java.io.InputStream;
 
 @RestController
 @RequiredArgsConstructor
@@ -26,19 +29,27 @@ public class UserAvatarController {
     public ResponseEntity<UserAvatarResponse> uploadAvatar(@PathVariable Long userProfileId,
                                                            @RequestParam("file") MultipartFile file) {
         UserAvatar userAvatar = userAvatarService.uploadUserAvatar(userProfileId, file);
-
         return ResponseEntity.status(HttpStatus.CREATED).body(userAvatarMapper.toResponse(userAvatar));
     }
 
 
+
     @GetMapping("/{id}")
-    public ResponseEntity<InputStreamResource> downloadAvatar(@PathVariable Long id) {
+    public ResponseEntity<StreamingResponseBody> downloadAvatar(@PathVariable Long id) {
         UserAvatarDownload userAvatarDownload = userAvatarService.downloadUserAvatar(id);
+
+        StreamingResponseBody stream = outputStream -> {
+            try (InputStream inputStream = userAvatarDownload.getInputStream()) {
+                inputStream.transferTo(outputStream);
+            }
+        };
 
         return ResponseEntity.ok()
                 .contentType(userAvatarDownload.getMediaType())
-                .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + userAvatarDownload.getUrl() + "\"")
-                .body(new InputStreamResource(userAvatarDownload.getInputStream()));
+                .header(HttpHeaders.CONTENT_DISPOSITION,
+                        "inline; filename=\"" + userAvatarDownload.getUrl() + "\"")
+                .body(stream);
+
     }
 }
 
