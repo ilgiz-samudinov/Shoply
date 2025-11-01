@@ -43,46 +43,20 @@ public class UserAvatarServiceImpl implements UserAvatarService {
     @Transactional
     public UserAvatar uploadUserAvatar(Long userProfileId, MultipartFile file) {
         UserProfile userProfile = userProfileService.getUserProfile(userProfileId);
+        String avatarUrl = fileStorage.upload(userProfileId, file, bucketName);
+        Instant now = Instant.now(clock);
 
-        String avatarUrl;
-        try {
-            avatarUrl = fileStorage.upload(userProfileId, file, bucketName);
-        } catch (Exception ex) {
-            throw new FileStorageException("Failed to upload avatar file", ex);
+        UserAvatar userAvatar = userAvatarRepository.findByUserProfile(userProfile);
+        if (userAvatar == null) {
+            userAvatar = UserAvatar.builder().userProfile(userProfile).avatarUrl(avatarUrl).uploadedAt(now).build();
+        } else {
+            String oldAvatarUrl = userAvatar.getAvatarUrl();
+            userAvatar.setAvatarUrl(avatarUrl);
+            userAvatar.setUploadedAt(now);
+            userAvatarRepository.save(userAvatar);
+            applicationEventPublisher.publishEvent(new FileDeleteEvent(oldAvatarUrl, bucketName));
         }
-
-        try {
-            UserAvatar currentAvatar = userAvatarRepository.findByUserProfile(userProfile);
-
-            if (currentAvatar == null) {
-
-                UserAvatar userAvatar = UserAvatar.builder()
-                        .avatarUrl(avatarUrl)
-                        .userProfile(userProfile)
-                        .uploadedAt(Instant.now(clock))
-                        .build();
-                UserAvatar saved = userAvatarRepository.save(userAvatar);
-                return saved;
-            } else {
-
-                String oldAvatarUrl = currentAvatar.getAvatarUrl();
-                currentAvatar.setAvatarUrl(avatarUrl);
-                currentAvatar.setUploadedAt(Instant.now(clock));
-                UserAvatar saved = userAvatarRepository.save(currentAvatar);
-
-                applicationEventPublisher.publishEvent(new FileDeleteEvent(oldAvatarUrl, bucketName));
-                return saved;
-            }
-        } catch (RuntimeException ex) {
-
-            try {
-                fileStorage.delete(bucketName, avatarUrl);
-            } catch (Exception deleteEx) {
-                System.err.println("Failed to delete uploaded file after DB error: " + avatarUrl);
-                deleteEx.printStackTrace();
-            }
-            throw new UserAvatarPersistenceException("Error while saving avatar to the database", ex);
-        }
+        return userAvatarRepository.save(userAvatar);
     }
 
 
@@ -92,18 +66,12 @@ public class UserAvatarServiceImpl implements UserAvatarService {
         InputStream inputStream = fileStorage.download(bucketName, urlAvatar);
         String contentType = fileStorage.getContentType(bucketName, urlAvatar);
         MediaType mediaType = MediaType.parseMediaType(contentType != null ? contentType : MediaType.APPLICATION_OCTET_STREAM_VALUE);
-        return UserAvatarDownload.builder()
-                .inputStream(inputStream)
-                .contentType(contentType)
-                .mediaType(mediaType)
-                .url(urlAvatar)
-                .build();
+        return UserAvatarDownload.builder().inputStream(inputStream).contentType(contentType).mediaType(mediaType).url(urlAvatar).build();
     }
 
 
-
-    @Transactional (readOnly = true)
+    @Transactional(readOnly = true)
     public UserAvatar getUserAvatarById(Long id) {
-        return userAvatarRepository.findById(id).orElseThrow(()-> new NotFoundException("User avatar not found"));
+        return userAvatarRepository.findById(id).orElseThrow(() -> new NotFoundException("User avatar not found"));
     }
 }
