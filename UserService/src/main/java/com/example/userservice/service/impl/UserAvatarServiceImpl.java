@@ -2,9 +2,7 @@ package com.example.userservice.service.impl;
 
 import com.example.userservice.dto.UserAvatarDownload;
 import com.example.userservice.event.FileDeleteEvent;
-import com.example.userservice.exception.FileStorageException;
 import com.example.userservice.exception.NotFoundException;
-import com.example.userservice.exception.UserAvatarPersistenceException;
 import com.example.userservice.mapper.UserAvatarMapper;
 import com.example.userservice.model.UserAvatar;
 import com.example.userservice.model.UserProfile;
