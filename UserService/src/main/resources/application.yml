@@ -1,0 +1,34 @@
+spring:
+  application:
+    name: user-service
+  datasource:
+    url: jdbc:postgresql://localhost:5432/shoply_user_service
+    username: postgres
+    password: postgres
+  jpa:
+    hibernate:
+      ddl-auto: update
+  rabbitmq:
+    host: localhost
+    username: user
+    password: password
+
+server:
+  port: 8080
+
+minio:
+  url: http://localhost:9001
+  access-key: minioadmin
+  secret-key: minioadmin
+  region: eu-west-1
+  bucket:
+    name:
+      avatar: user-service
+
+userservice:
+  rabbitmq:
+    queue: users-queue
+    dlq: users-dlq
+    exchange: users-exchange
+    routing-key: user.created
+    dlq-routing-key: user.dlq
