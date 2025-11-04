@@ -1,9 +1,11 @@
 package com.example.userservice.service.impl;
 
 import com.example.userservice.dto.UserRequest;
+import com.example.userservice.dto.UserResponse;
 import com.example.userservice.exception.NotFoundException;
 import com.example.userservice.mapper.UserMapper;
 import com.example.userservice.model.User;
+import com.example.userservice.producer.UserProducer;
 import com.example.userservice.repository.UserRepository;
 import com.example.userservice.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -17,12 +19,15 @@ import java.util.List;
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
-
+    private final UserProducer userProducer;
 
     @Transactional
     public User createUser(UserRequest userRequest) {
         User user = userMapper.toEntity(userRequest);
-        return userRepository.save(user);
+        User savedUser = userRepository.save(user);
+        UserResponse userResponse = userMapper.toResponse(savedUser);
+        userProducer.send(userResponse);
+        return savedUser;
     }
 
 
