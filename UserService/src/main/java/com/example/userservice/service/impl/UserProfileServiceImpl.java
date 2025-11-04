@@ -1,6 +1,7 @@
 package com.example.userservice.service.impl;
 
 import com.example.userservice.dto.UserProfileRequest;
+import com.example.userservice.dto.UserResponse;
 import com.example.userservice.exception.NotFoundException;
 import com.example.userservice.exception.ResourceAlreadyExistsException;
 import com.example.userservice.mapper.UserProfileMapper;
@@ -24,17 +25,25 @@ public class UserProfileServiceImpl implements UserProfileService {
     private final UserService userService;
 
     @Transactional
-    public UserProfile createUserProfile(UserProfileRequest userProfileRequest) {
-        User user = userService.getUserById(userProfileRequest.getUserId());
-
+    @Override
+    public UserProfile createUserProfile(UserResponse userResponse) {
+        User user = userService.getUserById(userResponse.getId());
         if (userProfileRepository.existsByUser_Id(user.getId())) {
             throw new ResourceAlreadyExistsException("User profile already exists for user id " + user.getId());
         }
+        UserProfile profile = new UserProfile();
+        profile.setUser(user);
+        return userProfileRepository.save(profile);
+    }
 
+
+
+    @Transactional
+    public UserProfile updateUserProfile(Long id, UserProfileRequest userProfileRequest){
+        UserProfile existing = getUserProfile(id);
         UserProfile userProfile = userProfileMapper.toEntity(userProfileRequest);
-        userProfile.setUser(user);
-
-        return userProfileRepository.save(userProfile);
+        userProfileMapper.merge(existing, userProfile);
+        return userProfileRepository.save(existing);
     }
 
 
@@ -48,15 +57,6 @@ public class UserProfileServiceImpl implements UserProfileService {
     @Transactional(readOnly = true)
     public List<UserProfile> getAllUserProfiles(){
         return userProfileRepository.findAll();
-    }
-
-
-    @Transactional
-    public UserProfile updateUserProfile(Long id, UserProfileRequest userProfileRequest){
-        UserProfile existing = getUserProfile(id);
-        UserProfile userProfile = userProfileMapper.toEntity(userProfileRequest);
-        userProfileMapper.merge(existing, userProfile);
-        return userProfileRepository.save(existing);
     }
 
 
