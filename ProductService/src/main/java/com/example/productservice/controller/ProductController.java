@@ -4,6 +4,8 @@ import com.example.productservice.dto.ProductRequest;
 import com.example.productservice.dto.ProductResponse;
 import com.example.productservice.mapper.ProductMapper;
 import com.example.productservice.model.Product;
+import com.example.productservice.model.ProductDocument;
+import com.example.productservice.service.ProductDocumentService;
 import com.example.productservice.service.ProductService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +23,7 @@ public class ProductController {
 
     private final ProductService productService;
     private final ProductMapper productMapper;
+    private final ProductDocumentService productDocumentService;
 
     @PostMapping
     public ResponseEntity<ProductResponse> createProduct(@Valid @RequestBody ProductRequest productRequest) {
@@ -28,11 +31,15 @@ public class ProductController {
         return ResponseEntity.status(HttpStatus.CREATED).body(productMapper.toResponse(created));
     }
 
+
+
     @PutMapping("/{id}")
     public ResponseEntity<ProductResponse> updateProduct(@PathVariable Long id, @Valid @RequestBody ProductRequest productRequest) {
         Product updated = productService.updateProduct(id, productRequest);
         return ResponseEntity.status(HttpStatus.OK).body(productMapper.toResponse(updated));
     }
+
+
 
     @GetMapping
     public ResponseEntity<List<ProductResponse>> getAllProducts() {
@@ -41,15 +48,38 @@ public class ProductController {
         );
     }
 
+
+
     @GetMapping("/{id}")
     public ResponseEntity<ProductResponse> getProductById(@PathVariable Long id) {
         Product product = productService.getProductById(id);
         return ResponseEntity.ok(productMapper.toResponse(product));
     }
 
+
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteProduct(@PathVariable Long id) {
         productService.deleteProduct(id);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
+
+
+    @GetMapping("/title")
+    public ResponseEntity<ProductResponse> getProductByTitle(@RequestParam String title){
+        Product product = productService.getProductByTitle(title);
+        return ResponseEntity.ok(productMapper.toResponse(product));
+    }
+
+
+
+    @GetMapping("/search")
+    public ResponseEntity<List<ProductDocument>> searchByMatch(@RequestParam String text){
+        return ResponseEntity.ok(
+                productDocumentService.searchByMatch(text)
+        );
+    }
+
+
+
 }
