@@ -35,11 +35,6 @@ public class Product {
     private BigDecimal price;
 
 
-
-//    @OneToMany(mappedBy = "product", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-//    private List<Image> images = new ArrayList<>();
-
-
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
