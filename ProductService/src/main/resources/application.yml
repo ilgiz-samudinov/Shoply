@@ -1,12 +1,35 @@
-#spring:
-#  application:
-#    name: ProductService
-#  data:
-#    mongodb:
-#      uri: mongodb://admin:password@localhost:27017/test
-#
-#
-#server:
-#  port: 8083
-#
-#
+spring:
+  application:
+    name: ProductService
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/shoply_product_service
+    username: postgres
+    password: postgres
+  jpa:
+    hibernate:
+      ddl-auto: update
+
+  elasticsearch:
+    uris: http://localhost:9200
+
+  rabbitmq:
+    host: localhost
+    username: admin
+    password: admin
+
+server:
+  port: 8083
+
+
+
+productservice:
+  rabbitmq:
+    queue: product-queue
+    dlq: product-dlq
+    exchange: product-exchange
+    dlq-routing-key: product.dlq
+    routing-key-create: product.created
+    routing-key-update: product.updated
+    routing-key-delete: product.deleted
+
