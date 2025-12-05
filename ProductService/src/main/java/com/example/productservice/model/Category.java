@@ -14,11 +14,13 @@ import java.util.List;
 @NoArgsConstructor
 @Getter
 @Setter
-@Table(name = "sub_categories")
+@Table(name = "categories")
 public class Category {
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String name;
+    private String slug;
 
     @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<SubCategory> subCategories;
