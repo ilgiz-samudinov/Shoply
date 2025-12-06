@@ -23,9 +23,10 @@ public class CategoryController {
 
     @PostMapping
     public ResponseEntity<CategoryResponse> createCategory(@RequestBody CategoryRequest categoryRequest) {
-        Category category = categoryService.createCategory(categoryRequest);
+        Category category = categoryMapper.toEntity(categoryRequest);
+        Category created= categoryService.createCategory(category);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(categoryMapper.toResponse(category));
+                .body(categoryMapper.toResponse(created));
     }
 
     @PutMapping("/{id}")
@@ -33,8 +34,9 @@ public class CategoryController {
             @PathVariable Long id,
             @RequestBody CategoryRequest categoryRequest
     ) {
-        Category category = categoryService.updateCategory(id, categoryRequest);
-        return ResponseEntity.ok(categoryMapper.toResponse(category));
+        Category category = categoryMapper.toEntity(categoryRequest);
+        Category updated = categoryService.updateCategory(id, category);
+        return ResponseEntity.ok(categoryMapper.toResponse(updated));
     }
 
     @GetMapping("/{id}")

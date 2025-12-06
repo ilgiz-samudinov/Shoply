@@ -19,23 +19,22 @@ public class CategoryService {
 
 
     @Transactional
-    public Category createCategory(CategoryRequest categoryRequest) {
-        if(categoryRequest == null) {
+    public Category createCategory(Category category) {
+        if(category == null) {
             throw new NotFoundException("category request is null");
         }
-        Category category = categoryMapper.toEntity(categoryRequest);
         return categoryRepository.save(category);
     }
 
 
     @Transactional
-    public Category updateCategory(Long id, CategoryRequest categoryRequest) {
-        if(categoryRequest == null) {
+    public Category updateCategory(Long id, Category category) {
+        if(category == null) {
             throw new NotFoundException("category request is null");
         }
         Category existingCategory = getCategoryById(id);
-        existingCategory.setName(categoryRequest.getName());
-        existingCategory.setSlug(categoryRequest.getSlug());
+        existingCategory.setName(category.getName());
+        existingCategory.setSlug(category.getSlug());
         return categoryRepository.save(existingCategory);
     }
 
