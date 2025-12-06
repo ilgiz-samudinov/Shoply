@@ -21,30 +21,29 @@ public class SubCategoryService {
     private final SubCategoryMapper subCategoryMapper;
 
     @Transactional
-    public SubCategory createSubCategory(SubCategoryRequest request) {
-        if (request == null) {
+    public SubCategory createSubCategory(SubCategory subCategory) {
+        if (subCategory == null) {
             throw new NotFoundException("subCategory request is null");
         }
 
-        Category category = categoryService.getCategoryById(request.getCategoryId());
-        SubCategory subCategory = subCategoryMapper.toEntity(request);
+        Category category = categoryService.getCategoryById(subCategory.getCategory().getId());
         subCategory.setCategory(category);
         return subCategoryRepository.save(subCategory);
     }
 
 
     @Transactional
-    public SubCategory updateSubCategory(Long id, SubCategoryRequest request) {
-        if (request == null) {
+    public SubCategory updateSubCategory(Long id, SubCategory subCategory) {
+        if (subCategory == null) {
             throw new NotFoundException("subCategory request is null");
         }
 
         SubCategory existing = getSubCategory(id);
-        existing.setName(request.getName());
-        existing.setSlug(request.getSlug());
+        existing.setName(subCategory.getName());
+        existing.setSlug(subCategory.getSlug());
 
-        if (request.getCategoryId() != null && !request.getCategoryId().equals(existing.getCategory().getId())) {
-            Category category = categoryService.getCategoryById(request.getCategoryId());
+        if (subCategory.getCategory().getId() != null && !subCategory.getCategory().getId().equals(existing.getCategory().getId())) {
+            Category category = categoryService.getCategoryById(subCategory.getCategory().getId());
             existing.setCategory(category);
         }
 
@@ -53,8 +52,7 @@ public class SubCategoryService {
 
     @Transactional(readOnly = true)
     public SubCategory getSubCategory(Long id) {
-        return subCategoryRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("subCategory not found"));
+        return subCategoryRepository.findById(id).orElseThrow(() -> new NotFoundException("subCategory not found"));
     }
 
     @Transactional(readOnly = true)

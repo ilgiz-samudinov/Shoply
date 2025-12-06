@@ -23,7 +23,8 @@ public class SubCategoryController {
 
     @PostMapping
     public ResponseEntity<SubCategoryResponse> create(@RequestBody SubCategoryRequest request) {
-        SubCategory created = subCategoryService.createSubCategory(request);
+        SubCategory subCategory = subCategoryMapper.toEntity(request);
+        SubCategory created = subCategoryService.createSubCategory(subCategory);
         return ResponseEntity.status(HttpStatus.CREATED).body(subCategoryMapper.toResponse(created));
     }
 
@@ -32,7 +33,8 @@ public class SubCategoryController {
             @PathVariable Long id,
             @RequestBody SubCategoryRequest request
     ) {
-        SubCategory updated = subCategoryService.updateSubCategory(id, request);
+        SubCategory subCategory = subCategoryMapper.toEntity(request);
+        SubCategory updated = subCategoryService.updateSubCategory(id, subCategory);
         return ResponseEntity.ok(subCategoryMapper.toResponse(updated));
     }
 
