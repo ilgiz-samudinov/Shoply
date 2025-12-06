@@ -21,8 +21,7 @@ public class ProductService {
     private final ProductProducer productProducer;
 
     @Transactional
-    public Product createProduct(ProductRequest productRequest) {
-        Product product = productMapper.toEntity(productRequest);
+    public Product createProduct(Product product) {
          Product saved = productRepository.save(product);
          productProducer.sendCreated(saved);
          return saved;
@@ -31,10 +30,9 @@ public class ProductService {
 
 
     @Transactional
-    public Product updateProduct(Long id, ProductRequest productRequest) {
-        Product updated = productMapper.toEntity(productRequest);
+    public Product updateProduct(Long id, Product product) {
         Product existing = getProductById(id);
-        productMapper.merge(existing, updated);
+        productMapper.merge(existing, product);
         productProducer.sendUpdated(existing);
         return existing;
     }
